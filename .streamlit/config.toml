@@ -1,0 +1,7 @@
+[theme]
+primaryColor = "#ff6b6b"  # Accent color
+backgroundColor = "#111"  # Dark background for the app
+secondaryBackgroundColor = "#333"  # Secondary background (sidebar, etc.)
+textColor = "#ffffff"  # White text color for contrast
+font = "sans serif"  # Font choic
+#random
