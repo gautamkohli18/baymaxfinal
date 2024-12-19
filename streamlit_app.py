@@ -24,8 +24,8 @@ model = genai.GenerativeModel(
 chat_session = model.start_chat(history=[])
 
 # Streamlit app layout
-st.title("AI Chatbot")
-st.write("Welcome to the chatbot! Type your messages below.")
+st.title("Baymax - your neighborhood AI")
+st.write("Hey there Human ! I am here to assist you whenever you need some information. Type something to start the conversation........")
 
 # Embed the Lottie animation with the provided HTML embed code
 lottie_embed_html = """
