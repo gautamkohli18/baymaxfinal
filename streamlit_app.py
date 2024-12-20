@@ -48,8 +48,8 @@ st.components.v1.html(lottie_html, height=150, width=150)
 
 
 # Streamlit app layout
-st.title("AI Chatbot")
-st.write("Welcome to the chatbot! Type your messages below.")
+st.title("Baymax - Your friendly neighborhood AI")
+st.write("Hello Human! I am Baymax. I am here to fetch you valuable information whenever you need some!")
 
 # Load and display the Lottie animation
 
