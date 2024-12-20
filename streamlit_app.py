@@ -3,6 +3,9 @@ from streamlit_lottie import st_lottie
 import google.generativeai as genai
 import os
 import requests
+import time
+
+st.set_page_config(layout="wide", page_title="Baymax - Friendly Neighborhood AI", page_icon="🤖")
 
 # Function to load Lottie animations from a URL
 def load_lottie_url(url: str):
@@ -16,7 +19,7 @@ api_key = 'AIzaSyB3n1FTI2oiL_G7M7WqzdroNcQ-dJiFgyA'
 os.environ["GOOGLE_API_KEY"] = api_key
 genai.configure(api_key=os.environ["GOOGLE_API_KEY"])
 
-generation_config = { 
+generation_config = {
     "temperature": 1,
     "top_p": 0.95,
     "top_k": 40,
@@ -32,12 +35,11 @@ model = genai.GenerativeModel(
 # Start the chatbot session
 chat_session = model.start_chat(history=[])
 
-# Add the Lottie animation with transparent background using HTML
-# Add the Lottie animation with transparent background and centered alignment using HTML
+# Add the Lottie animation using HTML
 lottie_html = """
 <script src="https://unpkg.com/@dotlottie/player-component@2.7.12/dist/dotlottie-player.mjs" type="module"></script>
 <div style="display: flex; justify-content: right; align-items: right; height: 500vh;">
-    <dotlottie-player src="https://lottie.host/4ff3d5f4-1d6b-4f35-ac12-ac93de643c6e/3Ic3MV6yIu.lottie" 
+    <dotlottie-player src="https://lottie.host/4ff3d5f4-1d6b-4f35-ac12-ac93de643c6e/3Ic3MV6yIu.lottie"
                       background="transparent" speed="1" style="width: 150px; height: 150px" loop autoplay>
     </dotlottie-player>
 </div>
@@ -45,126 +47,108 @@ lottie_html = """
 
 st.components.v1.html(lottie_html, height=150, width=150)
 
-
-
 # Streamlit app layout
 st.title("Baymax - Your friendly neighborhood AI")
 st.write("Hello Human! I am Baymax. I am here to fetch you valuable information whenever you need some!")
 
-# Load and display the Lottie animation
-
-# Add custom CSS to style the background and chat interface
 st.markdown("""
     <style>
-        body {
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-            background-color: #111;
-            color: #fff;
-        }
-        
         .stApp {
-            background: url('https://img.freepik.com/free-photo/vivid-blurred-colorful-background_58702-2515.jpg') no-repeat center center fixed;
+            background: url('https://img.freepik.com/free-vector/pastel-ombre-background-pink-purple_53876-120750.jpg') no-repeat center center fixed;
             background-size: cover;
             height: 100vh;
         }
-
-        .chat-container {
-            position: relative;
-            max-width: 800px;
-            margin: 50px auto;
-            padding: 20px;
-            background-color: rgba(0, 0, 0, 0.7);  /* Semi-transparent black for readability */
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            z-index: 1;
-        }
-
         .message-box {
             display: flex;
             margin: 10px 0;
         }
-
         .user-message {
-            background-color: #ff6b6b;
-            color: white;
+            background-color: #74EBD5;
+            background-image: linear-gradient(90deg, #74EBD5 0%, #9FACE6 100%);
+            color: black;
             padding: 10px 20px;
             border-radius: 15px;
             margin-left: auto;
             max-width: 70%;
             word-wrap: break-word;
         }
-
         .ai-message {
-            background-color: #2e2e2e;
+            background-color: #4158D0;
+            background-image: linear-gradient(43deg, #4158D0 0%, #C850C0 46%, #FFCC70 100%);
             color: white;
             padding: 10px 20px;
             border-radius: 15px;
             max-width: 70%;
             word-wrap: break-word;
+            white-space: pre-wrap;
         }
-
         input[type="text"] {
-            background-color: #333;
-            color: white;
-            border: 1px solid #444;
-            padding: 10px 15px;
-            border-radius: 5px;
-            width: 80%;
-            font-size: 16px;
-            margin-top: 10px;
+            background-color: white !important;
+            color: black !important;
+            border: 1px solid black !important;
+            border-radius: 10px !important;
+            padding: 10px !important;
         }
-
-        input[type="text"]:focus {
-            outline: none;
-            border-color: #ff6b6b;
-        }
-
-        button {
-            background-color: #ff6b6b;
-            color: white;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-
-        button:hover {
-            background-color: #ff4c4c;
+        .stButton>button {
+            background-color: white !important;
+            color: black !important;
+            border: 1px solid black !important;
+            border-radius: 10px !important;
+            padding: 8px 16px !important;
         }
     </style>
 """, unsafe_allow_html=True)
 
-# Create a container for the chat window
-with st.container():
-    if 'history' not in st.session_state:
-        st.session_state.history = []
 
-    # Display message history
-    for message in st.session_state.history:
-        if message['role'] == 'user':
-            st.markdown(f'<div class="message-box"><div class="user-message">{message["text"]}</div></div>', unsafe_allow_html=True)
-        else:
-            st.markdown(f'<div class="message-box"><div class="ai-message">{message["text"]}</div></div>', unsafe_allow_html=True)
+# Initialize session state
+if 'history' not in st.session_state:
+    st.session_state.history = []
+if 'last_message_displayed' not in st.session_state:
+    st.session_state.last_message_displayed = True
 
-    # Input box for user to type their message
-    user_input = st.text_input("You: ", "", key="user_input")
+# Typewriting effect function
+def typewrite_effect(text):
+    placeholder = st.empty()  # Create a placeholder
+    typewritten_text = ""
+    for char in text:
+        typewritten_text += char
+        placeholder.markdown(f'<div class="ai-message">{typewritten_text}</div>', unsafe_allow_html=True)
+        time.sleep(0.006)  # Reduced sleep time for smoother typing effect
+    placeholder.markdown(f'<div class="ai-message">{text}</div>', unsafe_allow_html=True)
 
-    # Send message to the model and display response
+# Handle input submission
+def handle_input():
+    user_input = st.session_state.user_input
     if user_input:
-        response = chat_session.send_message(user_input)
-
-        # Append the conversation to the history
+        # Append user input to history
         st.session_state.history.append({'role': 'user', 'text': user_input})
+        response = chat_session.send_message(user_input)
+        
+        # Append AI response to history
         st.session_state.history.append({'role': 'chatbot', 'text': response.text})
+        st.session_state.last_message_displayed = False  # Mark the latest message as not displayed yet
+        
+        # Clear the input box
+        st.session_state.user_input = ""
 
-        # Display the chatbot's response
-        st.markdown(f'<div class="message-box"><div class="ai-message">{response.text}</div></div>', unsafe_allow_html=True)
+# Display chat history
+for idx, message in enumerate(st.session_state.history):
+    if message['role'] == 'user':
+        st.markdown(f'<div class="message-box"><div class="user-message">{message["text"]}</div></div>', unsafe_allow_html=True)
+    elif idx == len(st.session_state.history) - 1 and not st.session_state.last_message_displayed:
+        # Apply typewriting effect only to the most recent AI message
+        typewrite_effect(message["text"])
+        st.session_state.last_message_displayed = True
+    else:
+        # Display previous AI messages directly
+        st.markdown(f'<div class="message-box"><div class="ai-message">{message["text"]}</div></div>', unsafe_allow_html=True)
 
-    # Button to reset the chat
-    if st.button('Reset Chat'):
-        st.session_state.history = []
-        chat_session = model.start_chat(history=[])
-        st.write("Chat has been reset.")
+# Input box for user to type their message
+st.text_input("You:", key="user_input", placeholder="Type your message here...", on_change=handle_input)
+
+# Button to reset the chat
+if st.button('Reset Chat'):
+    st.session_state.history = []
+    st.session_state.last_message_displayed = True
+    chat_session = model.start_chat(history=[])
+    st.write("Chat has been reset.")
