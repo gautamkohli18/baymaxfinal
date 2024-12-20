@@ -1,6 +1,15 @@
 import streamlit as st
+from streamlit_lottie import st_lottie
 import google.generativeai as genai
 import os
+import requests
+
+# Function to load Lottie animations from a URL
+def load_lottie_url(url: str):
+    response = requests.get(url)
+    if response.status_code != 200:
+        return None
+    return response.json()
 
 # Set up the Google Generative AI API key
 api_key = 'AIzaSyB3n1FTI2oiL_G7M7WqzdroNcQ-dJiFgyA'
@@ -23,19 +32,28 @@ model = genai.GenerativeModel(
 # Start the chatbot session
 chat_session = model.start_chat(history=[])
 
-# Streamlit app layout
-st.title("Baymax - your neighborhood AI")
-st.write("Hey there Human ! I am here to assist you whenever you need some information. Type something to start the conversation........")
-
-# Embed the Lottie animation with the provided HTML embed code
-lottie_embed_html = """
+# Add the Lottie animation with transparent background using HTML
+# Add the Lottie animation with transparent background and centered alignment using HTML
+lottie_html = """
 <script src="https://unpkg.com/@dotlottie/player-component@2.7.12/dist/dotlottie-player.mjs" type="module"></script>
-<dotlottie-player src="https://lottie.host/703302ed-68d8-4bed-99ff-f550f8cb3d6c/dTcLdt3L7h.lottie" background="transparent" speed="1" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:2;" loop autoplay></dotlottie-player>
+<div style="display: flex; justify-content: right; align-items: right; height: 500vh;">
+    <dotlottie-player src="https://lottie.host/4ff3d5f4-1d6b-4f35-ac12-ac93de643c6e/3Ic3MV6yIu.lottie" 
+                      background="transparent" speed="1" style="width: 150px; height: 150px" loop autoplay>
+    </dotlottie-player>
+</div>
 """
-# Display Lottie animation in Streamlit
-st.markdown(lottie_embed_html, unsafe_allow_html=True)
 
-# Add custom CSS to style the background image and overlay
+st.components.v1.html(lottie_html, height=150, width=150)
+
+
+
+# Streamlit app layout
+st.title("AI Chatbot")
+st.write("Welcome to the chatbot! Type your messages below.")
+
+# Load and display the Lottie animation
+
+# Add custom CSS to style the background and chat interface
 st.markdown("""
     <style>
         body {
